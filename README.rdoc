@@ -1,0 +1,66 @@
+= Micro Inferer
+by <b>VisFleet Labs</b>
+
+http://labs.visfleet.com/micro_inferer
+
+== Description
+  
+A micro inference engine.
+
+Declare your rules:
+  inferer = Micro::Inferer.new
+  inferer.when(:wet).it_is(:raining)
+  inferer.when(:raining).and(:cold).it_is(:winter)
+
+State the facts:
+  inferer.it_is(:wet)
+  inferer.it_is(:cold)
+
+Infer stuff with it:
+  inferer.infer
+  > :winter
+
+== Why use an inference engine?
+You may want to consider using a rules engine when:
+- Your rules have dependancies between them. In other words rule _a_ is true only if _b_ is true also 
+- You have a large number of rules
+- The data your rules use changes infrequently
+- You need to run your rules frequently to see if they've fired
+- You want declarative (and pretty) syntax for expressing your rules 
+
+=== Performance
+
+Performance is O(c) where _c_ is the number facts that have changed. This is the main difference between 
+a rules engine and a bunch of IF..THEN...ELSE statements. IF..THEN..ELSE statements have performance
+O(rc) where _r_ is the number of rules.
+
+<b>Micro::Inferer's performance is independant of the number of rules in the system</b>
+
+== Install
+
+  sudo gem install visfleet-micro_inferer
+
+== Licence
+
+(The MIT License)
+
+Copyright (c) 2008 FIX
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
