@@ -1,6 +1,8 @@
 require 'pp'
 require 'set'
 require 'conditions_tree'
+require 'rubygems'
+require 'ruby-prof'
 
 module Micro
 
@@ -35,8 +37,8 @@ module Micro
 
     def assert(*new_facts)
       new_facts = format_facts(new_facts)
-      @added_facts += new_facts
-      @facts += new_facts
+      @added_facts.merge(new_facts)
+      @facts.merge(new_facts)
     end
     alias_method :it_is, :assert
 
@@ -44,15 +46,15 @@ module Micro
     # rules to refire if they are already true
     def reassert(*forced_facts)
       forced_facts = format_facts(forced_facts)
-      @forced_facts += forced_facts
-      @facts += forced_facts
+      @forced_facts.merge(forced_facts)
+      @facts.merge(forced_facts)
     end
 
     # Removes facts from working memory.
     def unassert(*removed_facts)
       removed_facts = format_facts(removed_facts)
-      @removed_facts += removed_facts
-      @facts -= removed_facts
+      @removed_facts.merge(removed_facts)
+      @facts.subtract(removed_facts)
     end
     alias_method :it_isnt, :unassert
     
@@ -89,8 +91,8 @@ module Micro
       until @added_facts.empty? && @removed_facts.empty? && @forced_facts.empty? do
         process_facts(@removed_facts) { |fact| update_facts_state(fact, false) }
         process_facts(@added_facts)   { |fact| update_facts_state(fact, true) }
-        process_facts(@forced_facts) do |fact| 
-          # To force these to fire again, we make then false first. However we disable
+        process_facts(@forced_facts) do |fact|
+          # To force these to fire again, we make them false first. However we disable
           # callbacks since they aren't really false
           self.suspend_callbacks { update_facts_state(fact, false) }
           update_facts_state(fact, true)
@@ -100,15 +102,16 @@ module Micro
       end
     end
     
-    def process_facts(facts_arr)
+    def process_facts(facts)
+      return if facts.empty?
       # We clear to original array. Then any further additions have come
       # from rules firing
-      tmp_facts = facts_arr.clone
-      facts_arr.clear
-    
+      tmp_facts = facts.clone
+      facts.clear
+          
       tmp_facts.each do |fact|
         yield fact
-      end
+      end      
     end
     
     def update_facts_state(fact, state)

@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "micro_inferer"
-  s.version = '0.1.1'
+  s.version = '0.1.3'
   s.authors = ["VisFleet"]
   s.homepage = ["labs.visfleet.com/micro_inferer"]
   s.date = '2009-01-01'
@@ -8,13 +8,15 @@ Gem::Specification.new do |s|
   s.files = [
              "lib/conditions_tree.rb",
              "lib/micro_inferer.rb",
-             "README.txt",
+             "README.rdoc",
              "spec/conditions_tree_spec.rb", 
              "spec/inferer_spec.rb", 
              "spec/rule_spec.rb", 
+             "perf_test/scenario1.rb", 
+             "perf_test/scenario2.rb", 
             ]
   s.has_rdoc = true
-  s.extra_rdoc_files = ["README.txt"]
+  s.extra_rdoc_files = ["README.rdoc"]
   s.require_paths = ["lib"]
   s.description = "A micro inference engine"
   s.summary = <<-EOF
