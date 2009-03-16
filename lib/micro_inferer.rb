@@ -2,7 +2,6 @@ require 'pp'
 require 'set'
 require 'conditions_tree'
 require 'rubygems'
-require 'ruby-prof'
 
 module Micro
 
