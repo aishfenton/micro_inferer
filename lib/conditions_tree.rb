@@ -8,11 +8,21 @@ module Micro
   class ConditionsTree
     attr_reader :active_branch
   
-    def initialize(pattern = nil, p_node = nil)
-      @sub_root = SubRootNode.new
+    def initialize(pattern = nil, p_node = nil, when_not = false)
+      @sub_root = when_not ? WhenNotNode.new : WhenNode.new
       @active_branch = @sub_root
       @sub_root.right_input = PatternNode.new(pattern) unless pattern.nil?
       @sub_root.right_input = p_node unless p_node.nil?
+    end
+    
+    # Alias for ConditionsTree.new 
+    def self.when(pattern = nil, p_node = nil)
+      self.new(pattern, p_node, false)
+    end
+
+    # Alias for ConditionsTree.new(x, y, false)
+    def self.when_not(pattern = nil, p_node = nil)
+      self.new(pattern, p_node, true)
     end
   
     def and(pattern)
@@ -20,13 +30,29 @@ module Micro
       self.and_node(p_node)
     end
 
+    def and_not(pattern)
+      p_node = PatternNode.new(pattern)
+      self.and_not_node(p_node)
+    end
+
     def or(pattern)
       p_node = PatternNode.new(pattern)
       self.or_node(p_node)
     end
 
+    def or_not(pattern)
+      p_node = PatternNode.new(pattern)
+      self.or_not_node(p_node)
+    end
+
     def and_node(p_node)
       j_node = AndNode.new
+      join_to_branch(j_node, p_node)
+      self
+    end
+
+    def and_not_node(p_node)
+      j_node = AndNotNode.new
       join_to_branch(j_node, p_node)
       self
     end
@@ -37,6 +63,12 @@ module Micro
       self
     end
 
+    def or_not_node(p_node)
+      j_node = OrNotNode.new
+      join_to_branch(j_node, p_node)
+      self
+    end
+    
     # Builds the tree programatically. Nodes must be provided in the order left then right
     # top to bottom. Matches the order nodes are output from self.each
     def <<(node)
@@ -61,7 +93,7 @@ module Micro
     end
         
     def ==(tree)
-      self.root == tree.root
+      self.sub_root == tree.sub_root
     end
   
     def inspect
@@ -92,6 +124,11 @@ module Micro
       end
     end
   
+    # Returns the node before the conditions tree. Useful for 
+    def sub_root
+      @sub_root
+    end
+
   private
 
     def join_to_branch(j_node, p_node)
@@ -109,7 +146,7 @@ module Micro
     attr_reader :state
     
     def initialize
-      @state = false
+      @state = nil
       @outputs = {}
     end
     
@@ -196,26 +233,39 @@ module Micro
       # Fill left with faux node
       self.left_input = PatternNode.new("FAUX NODE -- you shouldn't see this")
     end
-
-    def inspect
-      @right_input.inspect
-    end
-    
-    def child_state_changed(state)
-      # for root node, left is always true 
-      self.state = self.right_input.state
-    end
-      
+          
   private
   
     def state=(state)
-      return if @state == state 
+      return if @state == state
       
       @state = state
       # notify call back that state has changed
       @state_change_block.call(@state) unless @state_change_block.nil?
     end
           
+  end
+
+  class WhenNode < SubRootNode
+    def inspect
+      @right_input.inspect
+    end
+
+    def child_state_changed(state)
+      # for root node, left is always true 
+      self.state = self.right_input.state
+    end
+  end
+
+  class WhenNotNode < SubRootNode
+    def inspect
+      "not #{@right_input.inspect}"
+    end
+
+    def child_state_changed(state)
+      # for root node, left is always true 
+      self.state = !self.right_input.state
+    end
   end
 
   class AndNode < JoinNode
@@ -229,6 +279,17 @@ module Micro
     end
   end
 
+  class AndNotNode < JoinNode
+    def inspect
+      "and_not#{super()}" 
+    end
+
+    def child_state_changed(state)
+      # join is only true if both its children are true
+      self.state = self.left_input.state && !self.right_input.state
+    end
+  end
+
   class OrNode < JoinNode
     def inspect
       "or#{super()}"
@@ -237,6 +298,17 @@ module Micro
     def child_state_changed(state)
       # join is only true if one of its children are true
       self.state = self.left_input.state || self.right_input.state
+    end
+  end
+
+  class OrNotNode < JoinNode
+    def inspect
+      "or_not#{super()}"
+    end
+
+    def child_state_changed(state)
+      # join is only true if one of its children are true
+      self.state = self.left_input.state || !self.right_input.state
     end
   end
   

@@ -176,4 +176,46 @@ describe Micro::Inferer do
     @inferer.suspend_callbacks {  @inferer.infer }
   end
 
+  it "should infer facts when 'and_not' is used" do
+    @inferer.when(:wet).and_not(:sunny).it_is(:winter)
+
+    @inferer.it_is(:wet)
+    @inferer.infer.should include(:winter)
+    @inferer.it_is(:sunny)
+    @inferer.infer.should_not include(:winter)
+  end
+
+  it "should infer facts when 'or_not' is used" do
+    @inferer.when(:wet).or_not(:summer).it_is(:winter)
+
+    @inferer.it_is_not(:summer)
+    @inferer.infer.should include(:winter)
+  end
+
+  it "should infer facts when 'when_not' is used" do
+    @inferer.when(:wet).it_is(:winter)
+    @inferer.when_not(:winter).it_is(:good_times)
+
+    @inferer.it_is(:wet)
+    @inferer.infer.should include(:winter)
+    @inferer.infer.should_not include(:good_times)
+
+    @inferer.it_is_not(:wet)
+    @inferer.infer.should include(:good_times)
+  end
+
+  it "should infer facts from unasserts, even if they haven't been asserted before" do
+    @inferer.when_not(:wet).it_is(:summer)
+
+    @inferer.it_is_not(:wet)
+    @inferer.infer.should include(:summer)
+  end
+
+  it "should infer no facts if nothing is known" do
+    @inferer.when(:wet).it_is(:winter)
+    @inferer.when_not(:wet).it_is(:summer)
+    
+    @inferer.infer.should be_empty
+  end
+
 end

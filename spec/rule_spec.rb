@@ -55,5 +55,12 @@ describe 'Rule' do
     rule.conditions_tree.root.right_input.should_not be_eql(tree.root.right_input)
   end
 
+  it "should create a rule when 'when' or 'when_not' is called" do
+    rule = Micro::Rule.when(@inferer, :wet).and(:windy).implies(:winter)
+    rule.conditions_tree.should == Micro::ConditionsTree.when(:wet).and(:windy)
+
+    rule = Micro::Rule.when_not(@inferer, :wet).and(:windy).implies(:winter)
+    rule.conditions_tree.should == Micro::ConditionsTree.when_not(:wet).and(:windy)
+  end
 
 end

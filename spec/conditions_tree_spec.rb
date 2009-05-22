@@ -41,16 +41,22 @@ describe 'ConditionsTree' do
   end
 
   it "should be equal" do
-    tree1 = Micro::ConditionsTree.new(:july).or(:wet).and(:windy)
-    tree2 = Micro::ConditionsTree.new(:july).or(:wet).and(:windy)
-    
+    tree1 = Micro::ConditionsTree.when(:july).or(:wet).and(:windy)
+    tree2 = Micro::ConditionsTree.when(:july).or(:wet).and(:windy)
+    tree1.should == tree2
+
+    tree1 = Micro::ConditionsTree.when_not(:july)
+    tree2 = Micro::ConditionsTree.when_not(:july)
     tree1.should == tree2
   end
 
   it "should not be equal" do
     tree1 = Micro::ConditionsTree.new(:july).or(:wet).and(:windy)
-    tree2 = Micro::ConditionsTree.new(:june).or(:wet).and(:windy)
-    
+    tree2 = Micro::ConditionsTree.new(:june).or(:wet).and(:windy)    
+    tree1.should_not == tree2
+
+    tree1 = Micro::ConditionsTree.when_not(:windy)
+    tree2 = Micro::ConditionsTree.when(:windy)    
     tree1.should_not == tree2
   end
 
@@ -68,17 +74,23 @@ describe 'ConditionsTree' do
     tree.root.right_input.should_not == Micro::OrNode.new
     tree.root.left_input.should === Micro::PatternNode.new(:july)
   end
-  
+
+  it "a tree should start with a nil state" do
+    tree = Micro::ConditionsTree.new(:wet).and(:windy)
+    
+    tree.state.should == nil
+    tree.root.state.should == nil
+    tree.root.left_input.state == nil
+    tree.root.right_input.state == nil
+
+    tree.root.left_input.state = true
+    tree.root.state.should == nil
+  end
 
   it "should set an AND node to true if both leaves are true" do
     tree = Micro::ConditionsTree.new(:wet).and(:windy)
     
-    tree.state.should == false
-    tree.root.state.should == false
-
     tree.root.left_input.state = true
-    tree.root.state.should == false
-
     tree.root.right_input.state = true
     tree.root.state.should == true    
 
@@ -88,9 +100,6 @@ describe 'ConditionsTree' do
   it "should set an OR node to true if one leaf is true" do
     tree = Micro::ConditionsTree.new(:wet).or(:windy)
     
-    tree.state.should == false
-    tree.root.state.should == false
-
     tree.root.left_input.state = true
     tree.root.state.should == true
     tree.state.should == true    
@@ -102,8 +111,6 @@ describe 'ConditionsTree' do
 
   it "should change the state back to false if leaves change from true to false" do
     tree = Micro::ConditionsTree.new(:wet).or(:windy)
-    
-    tree.root.state.should == false
     
     tree.root.right_input.state = true
     tree.root.state.should == true
@@ -119,12 +126,10 @@ describe 'ConditionsTree' do
   it "should propergate its state up the tree" do
     tree = Micro::ConditionsTree.new(:wet).and(:windy).and(:freezing)
     
-    tree.root.right_input.state.should == false
     tree.root.right_input.left_input.state = true
     tree.root.right_input.right_input.state = true
     tree.root.right_input.state.should == true
 
-    tree.root.state.should == false
     tree.root.left_input.state = true
     tree.root.state.should == true
   end
@@ -198,6 +203,20 @@ describe 'ConditionsTree' do
     
     tree1.should == tree2
   end  
+
+  it "should create a tree when 'when' or 'when_not' is called" do
+    tree = Micro::ConditionsTree.when(:wet).and_not(:rainy)
+    tree.sub_root.should be_an_instance_of(Micro::WhenNode)
+    tree.root.should be_an_instance_of(Micro::AndNotNode)
+    tree.root.left_input.should == Micro::PatternNode.new(:wet)
+    tree.root.right_input.should == Micro::PatternNode.new(:rainy)
+
+    tree = Micro::ConditionsTree.when_not(:wet).or_not(:rainy)
+    tree.sub_root.should be_an_instance_of(Micro::WhenNotNode)
+    tree.root.should be_an_instance_of(Micro::OrNotNode)
+    tree.root.left_input.should == Micro::PatternNode.new(:wet)
+    tree.root.right_input.should == Micro::PatternNode.new(:rainy)
+  end
   
 end
 

@@ -23,7 +23,13 @@ module Micro
     end
 
     def when(pattern)
-      rule = Rule.new(self, pattern)
+      rule = Rule.when(self, pattern)
+      @rules << rule
+      rule
+    end
+
+    def when_not(pattern)
+      rule = Rule.when_not(self, pattern)
       @rules << rule
       rule
     end
@@ -55,7 +61,7 @@ module Micro
       @removed_facts.merge(removed_facts)
       @facts.subtract(removed_facts)
     end
-    alias_method :it_isnt, :unassert
+    alias_method :it_is_not, :unassert
     
     def infer
       apply_facts
@@ -107,7 +113,6 @@ module Micro
       # from rules firing
       tmp_facts = facts.clone
       facts.clear
-          
       tmp_facts.each do |fact|
         yield fact
       end      
@@ -124,10 +129,18 @@ module Micro
     attr_accessor :conditions_tree
     attr_accessor :action_facts, :action_proc
     
-    def initialize(inferer, pattern = nil)
+    def initialize(inferer, pattern = nil, when_not = false)
       @inferer = inferer
       p_node = @inferer.get_pattern_node(PatternNode.new(pattern)) unless pattern.nil?
-      @conditions_tree = ConditionsTree.new(nil, p_node)
+      @conditions_tree = ConditionsTree.new(nil, p_node, when_not)
+    end
+    
+    def self.when(inferer, pattern = nil)
+      Rule.new(inferer, pattern, false)
+    end
+
+    def self.when_not(inferer, pattern = nil)
+      Rule.new(inferer, pattern, true)
     end
     
     def and(pattern)
@@ -136,11 +149,25 @@ module Micro
       conditions_tree.and_node(p_node)
       self
     end
+
+    def and_not(pattern)
+      # get from cache
+      p_node = @inferer.get_pattern_node(PatternNode.new(pattern))
+      conditions_tree.and_not_node(p_node)
+      self
+    end
     
     def or(pattern)
       # get from cache
       p_node = @inferer.get_pattern_node(PatternNode.new(pattern))
       conditions_tree.or_node(p_node)
+      self
+    end
+
+    def or_not(pattern)
+      # get from cache
+      p_node = @inferer.get_pattern_node(PatternNode.new(pattern))
+      conditions_tree.or_not_node(p_node)
       self
     end
     

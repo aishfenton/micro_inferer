@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "micro_inferer"
-  s.version = '0.1.4'
+  s.version = '0.1.5'
   s.authors = ["VisFleet"]
   s.homepage = ["labs.visfleet.com/micro_inferer"]
   s.date = '2009-01-01'
