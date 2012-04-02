@@ -1,7 +1,5 @@
 = Micro Inferer
-by <b>VisFleet Labs</b>
-
-http://labs.visfleet.com/micro_inferer
+by <b>Aish Fenton</b>
 
 == Description
   
