@@ -1,5 +1,5 @@
 = Micro Inferer
-by <b>Aish Fenton</b>
+by Aish Fenton
 
 == Description
   
@@ -29,7 +29,7 @@ You may want to consider using a rules engine when:
 === Performance
 
 Performance is O(c) where _c_ is the number facts that have changed. This is the main difference between 
-a rules engine and a bunch of IF..THEN...ELSE statements. IF..THEN..ELSE statements have performance
+a rules engine and a collection of IF-THEN-ELSE statements. IF-THEN-ELSE statements have performance
 O(rc) where _r_ is the number of rules.
 
 <b>Micro::Inferer's performance is independant of the number of rules in the system</b>
